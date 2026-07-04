@@ -1,0 +1,365 @@
+@model NorthwindApp.Models.ViewModels.CartViewModel
+
+@{
+    ViewData["Title"] = "Carrito de compras";
+}
+
+<h1>🛒 Carrito de compras</h1>
+<hr />
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (Model.HasItems)
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-hover" id="cartTable">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th class="text-end">Precio unitario</th>
+                    <th class="text-center">Cantidad</th>
+                    <th class="text-end">Subtotal</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    <tr id="row-@item.ProductId">
+                        <td>@item.ProductName</td>
+                        <td class="text-end">@item.UnitPrice.ToString("C")</td>
+                        <td class="text-center">
+                            <div class="input-group" style="max-width: 150px; margin: 0 auto;">
+                                <button class="btn btn-outline-secondary btn-sm btn-decrease" 
+                                        data-productid="@item.ProductId" type="button">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <input type="number" 
+                                       class="form-control form-control-sm text-center qty-input" 
+                                       value="@item.Quantity" 
+                                       min="1" 
+                                       max="@item.MaxStock"
+                                       step="1"
+                                       data-productid="@item.ProductId"
+                                       required />
+                                <button class="btn btn-outline-secondary btn-sm btn-increase" 
+                                        data-productid="@item.ProductId" type="button">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <small class="text-muted d-block">Máx: @item.MaxStock</small>
+                            <div id="cart-error-@item.ProductId" class="text-danger small" style="display:none;"></div>
+                        </td>
+                        <td class="text-end subtotal" id="subtotal-@item.ProductId">
+                            @item.Subtotal.ToString("C")
+                        </td>
+                        <td class="text-center">
+                            <button class="btn btn-danger btn-sm btn-remove" 
+                                    data-productid="@item.ProductId">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr class="table-active fw-bold">
+                    <td colspan="3" class="text-end">Total de productos:</td>
+                    <td class="text-end" id="totalItems">@Model.TotalItems</td>
+                    <td></td>
+                </tr>
+                <tr class="table-primary fw-bold">
+                    <td colspan="3" class="text-end">Total a pagar:</td>
+                    <td class="text-end" id="totalAmount">@Model.Total.ToString("C")</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <a asp-action="Available" asp-controller="Products" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Seguir comprando
+            </a>
+            <button class="btn btn-danger" id="clearCart">
+                <i class="fas fa-trash-alt"></i> Vaciar carrito
+            </button>
+        </div>
+        <div class="col-md-6 text-end">
+            <a asp-action="Checkout" asp-controller="Order" class="btn btn-success btn-lg" id="checkoutBtn">
+                <i class="fas fa-check-circle"></i> Proceder al pago
+            </a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-info text-center">
+        <i class="fas fa-shopping-cart fa-3x d-block mb-3"></i>
+        <h4>Tu carrito está vacío</h4>
+        <p>Explora nuestros productos y agrega los que desees.</p>
+        <a asp-action="Available" asp-controller="Products" class="btn btn-primary">
+            <i class="fas fa-store"></i> Ver productos
+        </a>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // =============================================
+            // VALIDACIONES EN EL CARRITO
+            // =============================================
+            
+            // Incrementar cantidad (con validación de stock)
+            $('.btn-increase').click(function () {
+                var productId = $(this).data('productid');
+                var input = $(this).closest('tr').find('.qty-input');
+                var currentValue = parseInt(input.val());
+                var maxValue = parseInt(input.attr('max'));
+                
+                if (currentValue < maxValue) {
+                    input.val(currentValue + 1);
+                    updateQuantity(productId, currentValue + 1);
+                } else {
+                    var errorDiv = $('#cart-error-' + productId);
+                    errorDiv.text('⚠️ Máximo permitido: ' + maxValue);
+                    errorDiv.show();
+                    setTimeout(function() { errorDiv.fadeOut(); }, 3000);
+                }
+            });
+
+            // Decrementar cantidad (con validación de mínimo)
+            $('.btn-decrease').click(function () {
+                var productId = $(this).data('productid');
+                var input = $(this).closest('tr').find('.qty-input');
+                var currentValue = parseInt(input.val());
+                
+                if (currentValue > 1) {
+                    input.val(currentValue - 1);
+                    updateQuantity(productId, currentValue - 1);
+                } else {
+                    var errorDiv = $('#cart-error-' + productId);
+                    errorDiv.text('⚠️ Mínimo permitido: 1');
+                    errorDiv.show();
+                    setTimeout(function() { errorDiv.fadeOut(); }, 3000);
+                }
+            });
+
+            // Cambio manual de cantidad (con validaciones)
+            $('.qty-input').change(function () {
+                var productId = $(this).data('productid');
+                var newValue = parseInt($(this).val());
+                var maxValue = parseInt($(this).attr('max'));
+                var errorDiv = $('#cart-error-' + productId);
+                
+                // Validación 1: Cantidad vacía
+                if ($(this).val() === '' || $(this).val() === null) {
+                    errorDiv.text('❌ Debes ingresar una cantidad.');
+                    errorDiv.show();
+                    $(this).val(1);
+                    setTimeout(function() { errorDiv.fadeOut(); }, 3000);
+                    return;
+                }
+                
+                // Validación 2: Valor no numérico
+                if (isNaN(newValue)) {
+                    errorDiv.text('❌ Debes ingresar un número válido.');
+                    errorDiv.show();
+                    $(this).val(1);
+                    setTimeout(function() { errorDiv.fadeOut(); }, 3000);
+                    return;
+                }
+                
+                // Validación 3: Cantidad negativa
+                if (newValue < 0) {
+                    errorDiv.text('❌ No se permiten cantidades negativas.');
+                    errorDiv.show();
+                    $(this).val(1);
+                    setTimeout(function() { errorDiv.fadeOut(); }, 3000);
+                    return;
+                }
+                
+                // Validación 4: Cantidad decimal
+                if (!Number.isInteger(newValue)) {
+                    errorDiv.text('❌ La cantidad debe ser un número entero.');
+                    errorDiv.show();
+                    $(this).val(Math.round(newValue));
+                    setTimeout(function() { errorDiv.fadeOut(); }, 3000);
+                    return;
+                }
+                
+                // Validación 5: Cantidad mayor al stock
+                if (newValue > maxValue) {
+                    errorDiv.text('❌ Stock insuficiente. Máximo: ' + maxValue);
+                    errorDiv.show();
+                    $(this).val(maxValue);
+                    updateQuantity(productId, maxValue);
+                    setTimeout(function() { errorDiv.fadeOut(); }, 3000);
+                    return;
+                }
+                
+                // Validación 6: Cantidad igual a cero
+                if (newValue === 0) {
+                    errorDiv.text('❌ La cantidad debe ser mayor a cero.');
+                    errorDiv.show();
+                    $(this).val(1);
+                    setTimeout(function() { errorDiv.fadeOut(); }, 3000);
+                    return;
+                }
+                
+                // Si todas las validaciones pasan
+                errorDiv.hide();
+                updateQuantity(productId, newValue);
+            });
+
+            // Validación en tiempo real al escribir
+            $('.qty-input').on('input', function() {
+                var productId = $(this).data('productid');
+                var maxValue = parseInt($(this).attr('max'));
+                var errorDiv = $('#cart-error-' + productId);
+                var value = $(this).val();
+                
+                if (value === '' || value === null) {
+                    errorDiv.text('⚠️ Ingresa una cantidad');
+                    errorDiv.show();
+                    return;
+                }
+                
+                var numValue = parseInt(value);
+                if (!isNaN(numValue)) {
+                    if (numValue > maxValue) {
+                        errorDiv.text('⚠️ Máximo: ' + maxValue);
+                        errorDiv.show();
+                    } else if (numValue < 1) {
+                        errorDiv.text('⚠️ Mínimo: 1');
+                        errorDiv.show();
+                    } else if (!Number.isInteger(numValue)) {
+                        errorDiv.text('⚠️ Usa números enteros');
+                        errorDiv.show();
+                    } else {
+                        errorDiv.hide();
+                    }
+                }
+            });
+
+            // =============================================
+            // ELIMINAR Y VACIAR CARRITO
+            // =============================================
+            
+            // Eliminar producto del carrito
+            $('.btn-remove').click(function () {
+                if (confirm('¿Eliminar este producto del carrito?')) {
+                    var productId = $(this).data('productid');
+                    var row = $(this).closest('tr');
+                    
+                    $.ajax({
+                        url: '@Url.Action("RemoveFromCart", "Cart")',
+                        type: 'POST',
+                        data: { productId: productId },
+                        success: function (response) {
+                            if (response.success) {
+                                row.fadeOut(300, function () {
+                                    $(this).remove();
+                                    updateTotals(response.total, response.totalItems);
+                                    updateCartBadge();
+                                    
+                                    if (!response.hasItems) {
+                                        location.reload();
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
+            });
+
+            // Vaciar carrito
+            $('#clearCart').click(function () {
+                if (confirm('¿Estás seguro de vaciar el carrito?')) {
+                    $.ajax({
+                        url: '@Url.Action("ClearCart", "Cart")',
+                        type: 'POST',
+                        success: function () {
+                            location.reload();
+                        }
+                    });
+                }
+            });
+
+            // =============================================
+            // FUNCIONES AUXILIARES
+            // =============================================
+            
+            // Función para actualizar cantidad
+            function updateQuantity(productId, quantity) {
+                $.ajax({
+                    url: '@Url.Action("UpdateQuantity", "Cart")',
+                    type: 'POST',
+                    data: { productId: productId, quantity: quantity },
+                    success: function (response) {
+                        if (response.success) {
+                            $('#subtotal-' + productId).text('$' + response.subtotal.toFixed(2));
+                            updateTotals(response.total, response.totalItems);
+                            updateCartBadge();
+                        } else {
+                            alert(response.message);
+                            if (response.maxStock) {
+                                var input = $('#row-' + productId).find('.qty-input');
+                                input.val(response.maxStock);
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Función para actualizar totales
+            function updateTotals(total, totalItems) {
+                $('#totalAmount').text('$' + total.toFixed(2));
+                $('#totalItems').text(totalItems);
+                
+                // Deshabilitar botón de checkout si no hay items
+                if (totalItems === 0) {
+                    $('#checkoutBtn').addClass('disabled');
+                } else {
+                    $('#checkoutBtn').removeClass('disabled');
+                }
+            }
+
+            // Función para actualizar contador del carrito
+            function updateCartBadge() {
+                $.ajax({
+                    url: '@Url.Action("GetCartCount", "Cart")',
+                    type: 'GET',
+                    success: function (data) {
+                        var badge = $('#cartBadge');
+                        if (data.count > 0) {
+                            badge.text(data.count);
+                            badge.show();
+                        } else {
+                            badge.hide();
+                        }
+                    }
+                });
+            }
+
+            // Inicializar
+            updateCartBadge();
+        });
+    </script>
+}

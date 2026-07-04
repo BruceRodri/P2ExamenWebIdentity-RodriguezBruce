@@ -1,0 +1,82 @@
+@model NorthwindApp.Models.Order
+
+@{
+    ViewData["Title"] = $"Detalles de orden #{Model.OrderId}";
+    var total = Model.OrderDetails?.Sum(od => od.UnitPrice * od.Quantity) ?? 0;
+}
+
+<h1>📋 Detalles de orden #@Model.OrderId</h1>
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Información de la orden</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">Cliente:</dt>
+                    <dd class="col-sm-8">@Model.Customer?.CompanyName</dd>
+                    
+                    <dt class="col-sm-4">Fecha:</dt>
+                    <dd class="col-sm-8">@Model.OrderDate?.ToString("dd/MM/yyyy HH:mm")</dd>
+                    
+                    <dt class="col-sm-4">Fecha requerida:</dt>
+                    <dd class="col-sm-8">@Model.RequiredDate?.ToString("dd/MM/yyyy")</dd>
+                    
+                    <dt class="col-sm-4">Destinatario:</dt>
+                    <dd class="col-sm-8">@Model.ShipName</dd>
+                    
+                    <dt class="col-sm-4">Total:</dt>
+                    <dd class="col-sm-8 fw-bold text-success">@total.ToString("C")</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Productos</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th class="text-end">Cantidad</th>
+                                <th class="text-end">Precio</th>
+                                <th class="text-end">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var detail in Model.OrderDetails)
+                            {
+                                <tr>
+                                    <td>@detail.Product?.ProductName</td>
+                                    <td class="text-end">@detail.Quantity</td>
+                                    <td class="text-end">@detail.UnitPrice.ToString("C")</td>
+                                    <td class="text-end">@((detail.UnitPrice * detail.Quantity).ToString("C"))</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a asp-action="MyOrders" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Volver
+    </a>
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-action="AllOrders" class="btn btn-info">
+            <i class="fas fa-list"></i> Todas las órdenes
+        </a>
+    }
+</div>

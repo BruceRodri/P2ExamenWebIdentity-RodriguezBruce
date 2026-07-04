@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "ZTcbJc4b3zo=",
+  "dgSpecHash": "Yl9nYzzFlTk=",
   "success": true,
-  "projectFilePath": "C:\\Users\\WinterOS\\Desktop\\P2Examen-RodriguezBruce\\NorthwindApp\\NorthwindApp.csproj",
+  "projectFilePath": "C:\\Users\\WinterOS\\Desktop\\BRUCE 6TO SEMESTRE\\DESARROLLO WEB\\2 PARCIAL\\P2Examen-RodriguezBruce\\NorthwindApp\\NorthwindApp.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\WinterOS\\.nuget\\packages\\azure.core\\1.47.1\\azure.core.1.47.1.nupkg.sha512",
     "C:\\Users\\WinterOS\\.nuget\\packages\\azure.identity\\1.14.2\\azure.identity.1.14.2.nupkg.sha512",
@@ -139,9 +139,9 @@
       "code": "NU1901",
       "level": "Warning",
       "message": "El paquete \"NuGet.Packaging\" 6.12.1 tiene una vulnerabilidad de gravedad baja conocida, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg",
-      "projectPath": "C:\\Users\\WinterOS\\Desktop\\P2Examen-RodriguezBruce\\NorthwindApp\\NorthwindApp.csproj",
+      "projectPath": "C:\\Users\\WinterOS\\Desktop\\BRUCE 6TO SEMESTRE\\DESARROLLO WEB\\2 PARCIAL\\P2Examen-RodriguezBruce\\NorthwindApp\\NorthwindApp.csproj",
       "warningLevel": 1,
-      "filePath": "C:\\Users\\WinterOS\\Desktop\\P2Examen-RodriguezBruce\\NorthwindApp\\NorthwindApp.csproj",
+      "filePath": "C:\\Users\\WinterOS\\Desktop\\BRUCE 6TO SEMESTRE\\DESARROLLO WEB\\2 PARCIAL\\P2Examen-RodriguezBruce\\NorthwindApp\\NorthwindApp.csproj",
       "libraryId": "NuGet.Packaging",
       "targetGraphs": [
         "net10.0"
@@ -151,9 +151,9 @@
       "code": "NU1901",
       "level": "Warning",
       "message": "El paquete \"NuGet.Protocol\" 6.12.1 tiene una vulnerabilidad de gravedad baja conocida, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg",
-      "projectPath": "C:\\Users\\WinterOS\\Desktop\\P2Examen-RodriguezBruce\\NorthwindApp\\NorthwindApp.csproj",
+      "projectPath": "C:\\Users\\WinterOS\\Desktop\\BRUCE 6TO SEMESTRE\\DESARROLLO WEB\\2 PARCIAL\\P2Examen-RodriguezBruce\\NorthwindApp\\NorthwindApp.csproj",
       "warningLevel": 1,
-      "filePath": "C:\\Users\\WinterOS\\Desktop\\P2Examen-RodriguezBruce\\NorthwindApp\\NorthwindApp.csproj",
+      "filePath": "C:\\Users\\WinterOS\\Desktop\\BRUCE 6TO SEMESTRE\\DESARROLLO WEB\\2 PARCIAL\\P2Examen-RodriguezBruce\\NorthwindApp\\NorthwindApp.csproj",
       "libraryId": "NuGet.Protocol",
       "targetGraphs": [
         "net10.0"

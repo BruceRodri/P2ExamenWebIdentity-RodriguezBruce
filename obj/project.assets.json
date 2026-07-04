@@ -6421,11 +6421,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\WinterOS\\Desktop\\P2Examen-RodriguezBruce\\NorthwindApp\\NorthwindApp.csproj",
+      "projectUniqueName": "C:\\Users\\WinterOS\\Desktop\\BRUCE 6TO SEMESTRE\\DESARROLLO WEB\\2 PARCIAL\\P2Examen-RodriguezBruce\\NorthwindApp\\NorthwindApp.csproj",
       "projectName": "NorthwindApp",
-      "projectPath": "C:\\Users\\WinterOS\\Desktop\\P2Examen-RodriguezBruce\\NorthwindApp\\NorthwindApp.csproj",
+      "projectPath": "C:\\Users\\WinterOS\\Desktop\\BRUCE 6TO SEMESTRE\\DESARROLLO WEB\\2 PARCIAL\\P2Examen-RodriguezBruce\\NorthwindApp\\NorthwindApp.csproj",
       "packagesPath": "C:\\Users\\WinterOS\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\WinterOS\\Desktop\\P2Examen-RodriguezBruce\\NorthwindApp\\obj\\",
+      "outputPath": "C:\\Users\\WinterOS\\Desktop\\BRUCE 6TO SEMESTRE\\DESARROLLO WEB\\2 PARCIAL\\P2Examen-RodriguezBruce\\NorthwindApp\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

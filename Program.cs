@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NorthwindApp.Data;
+using NorthwindApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
@@ -24,6 +25,25 @@ builder.Services
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
+// ============================================
+// CONFIGURACIÓN DEL CARRITO DE COMPRAS
+// ============================================
+
+// Servicios necesarios para el carrito
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<CartService>();
+
+// Configuración de Session
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+// ============================================
+
 var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
@@ -36,6 +56,7 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseSession();
 
 app.MapControllerRoute(
 name: "default",

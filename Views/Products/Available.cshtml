@@ -1,0 +1,176 @@
+@model IEnumerable<NorthwindApp.Models.Product>
+
+@{
+    ViewData["Title"] = "Productos disponibles";
+}
+
+<h1>🛒 Productos disponibles para compra</h1>
+<hr />
+
+<!-- Búsqueda -->
+<form asp-action="Available" method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text" name="searchString" class="form-control" 
+               placeholder="Buscar producto por nombre..." 
+               value="@ViewData["CurrentFilter"]" />
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-search"></i> Buscar
+        </button>
+    </div>
+</form>
+
+<!-- Tabla de productos -->
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>Producto</th>
+            <th>Categoría</th>
+            <th>Proveedor</th>
+            <th class="text-end">Precio</th>
+            <th class="text-center">Stock</th>
+            <th class="text-center">Acción</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.ProductName</td>
+                <td>@item.Category?.CategoryName</td>
+                <td>@item.Supplier?.CompanyName</td>
+                <td class="text-end">@item.UnitPrice?.ToString("C")</td>
+                <td class="text-center">
+                    <span class="badge @(item.UnitsInStock > 10 ? "bg-success" : "bg-warning")">
+                        @item.UnitsInStock
+                    </span>
+                </td>
+                <td class="text-center">
+                    <form asp-controller="Cart" asp-action="AddToCart" method="post" 
+                          class="d-inline" id="addToCartForm-@item.ProductId"
+                          onsubmit="return validateQuantity(@item.ProductId, @item.UnitsInStock)">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="productId" value="@item.ProductId" />
+                        <div class="input-group input-group-sm" style="width: 180px; margin: 0 auto;">
+                            <input type="number" 
+                                   name="quantity" 
+                                   id="quantity-@item.ProductId"
+                                   value="1" 
+                                   min="1" 
+                                   max="@item.UnitsInStock"
+                                   step="1"
+                                   class="form-control text-center" 
+                                   style="width: 70px;"
+                                   required
+                                   title="Ingrese una cantidad válida (1 - @item.UnitsInStock)" />
+                            <button type="submit" class="btn btn-success btn-sm">
+                                <i class="fas fa-cart-plus"></i> Agregar
+                            </button>
+                        </div>
+                        <div id="error-@item.ProductId" class="text-danger small mt-1" style="display:none;"></div>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info text-center">
+        <i class="fas fa-info-circle"></i> No hay productos disponibles en este momento.
+    </div>
+}
+
+@section Scripts {
+    <script>
+        function validateQuantity(productId, maxStock) {
+            var input = document.getElementById('quantity-' + productId);
+            var errorDiv = document.getElementById('error-' + productId);
+            var quantity = parseInt(input.value);
+            
+            // Validación 1: Cantidad vacía
+            if (input.value === '' || input.value === null) {
+                errorDiv.textContent = '❌ Debes ingresar una cantidad.';
+                errorDiv.style.display = 'block';
+                input.focus();
+                return false;
+            }
+            
+            // Validación 2: Valor no numérico
+            if (isNaN(quantity)) {
+                errorDiv.textContent = '❌ Debes ingresar un número válido.';
+                errorDiv.style.display = 'block';
+                input.value = '';
+                input.focus();
+                return false;
+            }
+            
+            // Validación 3: Cantidad igual a cero
+            if (quantity === 0) {
+                errorDiv.textContent = '❌ La cantidad debe ser mayor a cero.';
+                errorDiv.style.display = 'block';
+                input.focus();
+                return false;
+            }
+            
+            // Validación 4: Cantidad negativa
+            if (quantity < 0) {
+                errorDiv.textContent = '❌ No se permiten cantidades negativas.';
+                errorDiv.style.display = 'block';
+                input.value = 1;
+                input.focus();
+                return false;
+            }
+            
+            // Validación 5: Cantidad decimal
+            if (!Number.isInteger(quantity)) {
+                errorDiv.textContent = '❌ La cantidad debe ser un número entero.';
+                errorDiv.style.display = 'block';
+                input.value = Math.round(quantity);
+                input.focus();
+                return false;
+            }
+            
+            // Validación 6: Cantidad superior al stock
+            if (quantity > maxStock) {
+                errorDiv.textContent = '❌ Stock insuficiente. Disponible: ' + maxStock + ' unidades.';
+                errorDiv.style.display = 'block';
+                input.value = maxStock;
+                input.focus();
+                return false;
+            }
+            
+            // Si todas las validaciones pasan
+            errorDiv.style.display = 'none';
+            return true;
+        }
+        
+        // Validación en tiempo real: al cambiar el valor
+        document.querySelectorAll('[id^="quantity-"]').forEach(function(input) {
+            input.addEventListener('input', function() {
+                var productId = this.id.replace('quantity-', '');
+                var maxStock = parseInt(this.getAttribute('max'));
+                var errorDiv = document.getElementById('error-' + productId);
+                var quantity = parseInt(this.value);
+                
+                if (this.value === '' || isNaN(quantity)) {
+                    errorDiv.style.display = 'none';
+                    return;
+                }
+                
+                if (quantity > maxStock) {
+                    errorDiv.textContent = '⚠️ Máximo permitido: ' + maxStock;
+                    errorDiv.style.display = 'block';
+                    this.style.borderColor = 'red';
+                } else if (quantity < 1) {
+                    errorDiv.textContent = '⚠️ Mínimo permitido: 1';
+                    errorDiv.style.display = 'block';
+                    this.style.borderColor = 'red';
+                } else {
+                    errorDiv.style.display = 'none';
+                    this.style.borderColor = 'green';
+                }
+            });
+        });
+    </script>
+}

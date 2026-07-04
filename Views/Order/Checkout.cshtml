@@ -1,0 +1,151 @@
+@model NorthwindApp.Models.ViewModels.CartViewModel
+
+@{
+    ViewData["Title"] = "Checkout - Resumen de compra";
+}
+
+<h1>📋 Checkout - Resumen de compra</h1>
+<hr />
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Info"] != null)
+{
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        @TempData["Info"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <!-- Columna izquierda: Detalle de productos -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">📦 Productos seleccionados</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th class="text-end">Precio unitario</th>
+                                <th class="text-center">Cantidad</th>
+                                <th class="text-end">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Items)
+                            {
+                                <tr>
+                                    <td>@item.ProductName</td>
+                                    <td class="text-end">@item.UnitPrice.ToString("C")</td>
+                                    <td class="text-center">@item.Quantity</td>
+                                    <td class="text-end">@item.Subtotal.ToString("C")</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-active fw-bold">
+                                <td colspan="2">Total de productos:</td>
+                                <td class="text-center">@Model.TotalItems</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botones de navegación -->
+        <div class="mt-3">
+            <a asp-action="Index" asp-controller="Cart" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Volver al carrito
+            </a>
+            <a asp-action="Available" asp-controller="Products" class="btn btn-outline-secondary">
+                <i class="fas fa-store"></i> Seguir comprando
+            </a>
+        </div>
+    </div>
+
+    <!-- Columna derecha: Resumen y totales -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">💰 Resumen de compra</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>Subtotal:</span>
+                        <span class="fw-bold">@Model.Subtotal.ToString("C")</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Descuentos:</span>
+                        <span class="fw-bold">$0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Envío:</span>
+                        <span class="fw-bold">$0.00</span>
+                    </div>
+                    <hr />
+                    <div class="d-flex justify-content-between">
+                        <span class="fw-bold fs-5">Total a pagar:</span>
+                        <span class="fw-bold fs-5 text-success">@Model.Total.ToString("C")</span>
+                    </div>
+                    <hr />
+                    <div class="text-muted small">
+                        <i class="fas fa-info-circle"></i> 
+                        El precio de los productos se toma directamente de la base de datos al momento de confirmar la compra.
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <form asp-action="ConfirmOrder" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-success btn-lg w-100" id="confirmOrderBtn">
+                        <i class="fas fa-check-circle"></i> Confirmar compra
+                    </button>
+                </form>
+                <div class="text-muted small mt-2 text-center">
+                    Al confirmar, se generará la orden y se actualizará el inventario automáticamente.
+                </div>
+            </div>
+        </div>
+
+        <!-- Información adicional -->
+        <div class="card mt-3">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">ℹ️ ¿Qué sucede al confirmar?</h6>
+            </div>
+            <div class="card-body small">
+                <ol class="mb-0">
+                    <li>Se registra la orden en la base de datos</li>
+                    <li>Se registran los detalles de cada producto</li>
+                    <li>Se actualiza el stock automáticamente</li>
+                    <li>Se vacía tu carrito</li>
+                    <li>Verás un resumen de tu compra</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Prevenir doble clic en el botón de confirmar
+            $('form').submit(function () {
+                $('#confirmOrderBtn').prop('disabled', true)
+                    .html('<i class="fas fa-spinner fa-spin"></i> Procesando...');
+            });
+        });
+    </script>
+}

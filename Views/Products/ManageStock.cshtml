@@ -1,0 +1,136 @@
+@model NorthwindApp.Models.Product
+
+@{
+    ViewData["Title"] = $"Gestionar stock - {Model.ProductName}";
+}
+
+<h1>📦 Gestionar stock</h1>
+<hr />
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- Información del producto -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Información del producto</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">Producto</dt>
+                    <dd class="col-sm-9">@Model.ProductName</dd>
+
+                    <dt class="col-sm-3">Categoría</dt>
+                    <dd class="col-sm-9">@Model.Category?.CategoryName</dd>
+
+                    <dt class="col-sm-3">Proveedor</dt>
+                    <dd class="col-sm-9">@Model.Supplier?.CompanyName</dd>
+
+                    <dt class="col-sm-3">Precio</dt>
+                    <dd class="col-sm-9">@Model.UnitPrice?.ToString("C")</dd>
+
+                    <dt class="col-sm-3">
+                        <span class="fw-bold">Stock actual</span>
+                    </dt>
+                    <dd class="col-sm-9">
+                        <span class="badge @(Model.UnitsInStock > 10 ? "bg-success" : Model.UnitsInStock > 0 ? "bg-warning" : "bg-danger")" 
+                              style="font-size: 1.2rem;">
+                            @(Model.UnitsInStock ?? 0) unidades
+                        </span>
+                    </dd>
+
+                    <dt class="col-sm-3">Estado</dt>
+                    <dd class="col-sm-9">
+                        @if (Model.Discontinued == 0)
+                        {
+                            <span class="badge bg-success">Disponible</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Discontinuado</span>
+                        }
+                    </dd>
+                </dl>
+            </div>
+        </div>
+
+        <!-- Formulario: Incrementar stock -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">⬆️ Incrementar stock</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="IncreaseStock" method="post">
+                    <input type="hidden" name="productId" value="@Model.ProductId" />
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-6">
+                            <label for="increaseQuantity" class="form-label">Cantidad a agregar:</label>
+                            <input type="number" id="increaseQuantity" name="quantity" 
+                                   class="form-control" min="1" value="1" required />
+                        </div>
+                        <div class="col-md-6">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-plus-circle"></i> Incrementar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Formulario: Reducir stock -->
+        <div class="card mb-4">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">⬇️ Reducir stock</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="DecreaseStock" method="post">
+                    <input type="hidden" name="productId" value="@Model.ProductId" />
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-6">
+                            <label for="decreaseQuantity" class="form-label">Cantidad a reducir:</label>
+                            <input type="number" id="decreaseQuantity" name="quantity" 
+                                   class="form-control" min="1" max="@Model.UnitsInStock" 
+                                   value="1" required />
+                            <small class="text-muted">Máximo permitido: @(Model.UnitsInStock ?? 0) unidades</small>
+                        </div>
+                        <div class="col-md-6">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-minus-circle"></i> Reducir
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Botones de navegación -->
+        <div class="mt-4">
+            <a asp-action="Admin" asp-controller="Products" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Volver al listado
+            </a>
+        </div>
+    </div>
+
+    <!-- Panel lateral: información adicional -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">ℹ️ Información</h5>
+            </div>
+            <div class="card-body">
+                <h6>¿Cómo funciona?</h6>
+                <ul>
+                    <li><strong>Incrementar:</strong> Agrega unidades al stock.</li>
+                    <li><strong>Reducir:</strong> Quita unidades del stock.</li>
+                    <li>No se puede reducir más stock del disponible.</li>
+                </ul>
+                <hr />
+                <h6>¿Cuándo usar?</h6>
+                <ul>
+                    <li><strong>Incrementar:</strong> Reponer productos.</li>
+                    <li><strong>Reducir:</strong> Ajustes por pérdidas o devoluciones.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

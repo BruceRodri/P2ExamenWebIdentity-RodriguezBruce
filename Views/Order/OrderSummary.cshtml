@@ -1,0 +1,128 @@
+@model NorthwindApp.Models.Order
+
+@{
+    ViewData["Title"] = $"Resumen de orden #{Model.OrderId}";
+    
+    // Calcular el total desde el servidor
+    decimal total = (decimal)(Model.OrderDetails?.Sum(od => od.UnitPrice * od.Quantity) ?? 0);
+}
+
+<h1>✅ ¡Compra completada!</h1>
+<hr />
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <h4 class="alert-heading">
+            <i class="fas fa-check-circle"></i> @TempData["Success"]
+        </h4>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <!-- Columna izquierda: Detalle de productos -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">📦 Productos comprados</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th class="text-end">Precio unitario</th>
+                                <th class="text-center">Cantidad</th>
+                                <th class="text-end">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.OrderDetails != null && Model.OrderDetails.Any())
+                            {
+                                @foreach (var detail in Model.OrderDetails)
+                                {
+                                    <tr>
+                                        <td>@detail.Product?.ProductName</td>
+                                        <td class="text-end">@detail.UnitPrice.ToString("C")</td>
+                                        <td class="text-center">@detail.Quantity</td>
+                                        <td class="text-end">@((detail.UnitPrice * detail.Quantity).ToString("C"))</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">
+                                        No hay detalles disponibles.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-primary fw-bold">
+                                <td colspan="3" class="text-end">Total de la orden:</td>
+                                <td class="text-end">@total.ToString("C")</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Columna derecha: Información de la orden -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">📋 Información de la orden</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-5">Número de orden:</dt>
+                    <dd class="col-sm-7">#@Model.OrderId</dd>
+
+                    <dt class="col-sm-5">Fecha:</dt>
+                    <dd class="col-sm-7">@Model.OrderDate?.ToString("dd/MM/yyyy")</dd>
+
+                    <dt class="col-sm-5">Cliente:</dt>
+                    <dd class="col-sm-7">@Model.Customer?.CompanyName</dd>
+
+                    <dt class="col-sm-5">Destinatario:</dt>
+                    <dd class="col-sm-7">@Model.ShipName</dd>
+
+                    <dt class="col-sm-5">Fecha requerida:</dt>
+                    <dd class="col-sm-7">@Model.RequiredDate?.ToString("dd/MM/yyyy")</dd>
+
+                    <dt class="col-sm-5">Productos:</dt>
+                    <dd class="col-sm-7">@(Model.OrderDetails?.Count ?? 0)</dd>
+
+                    <dt class="col-sm-5 fw-bold text-success">Total:</dt>
+                    <dd class="col-sm-7 fw-bold text-success">@total.ToString("C")</dd>
+                </dl>
+            </div>
+        </div>
+
+        <!-- Botones de navegación -->
+        <div class="mt-3">
+            <a asp-action="Available" asp-controller="Products" class="btn btn-primary w-100 mb-2">
+                <i class="fas fa-store"></i> Seguir comprando
+            </a>
+            <a asp-action="MyOrders" class="btn btn-info w-100">
+                <i class="fas fa-list"></i> Ver mis órdenes
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Imprimir el resumen (opcional)
+        $(document).ready(function () {
+            console.log('Orden #@Model.OrderId completada');
+            console.log('Total: @total.ToString("C")');
+            console.log('Productos: @(Model.OrderDetails?.Count ?? 0)');
+        });
+    </script>
+}

@@ -26,6 +26,64 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Products" asp-action="Available">
+                                <i class="fas fa-store"></i> Productos
+                            </a>
+                        </li>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" 
+                                   role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-user-cog"></i> Admin
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+                                    <!-- Gestión de productos -->
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Products" asp-action="Admin">
+                                            <i class="fas fa-boxes"></i> Gestionar productos
+                                        </a>
+                                    </li>
+                                    <!-- Consultas de inventario -->
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Products" asp-action="LowStock">
+                                            <i class="fas fa-exclamation-triangle text-warning"></i> Stock bajo
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Products" asp-action="OutOfStock">
+                                            <i class="fas fa-times-circle text-danger"></i> Sin stock
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Products" asp-action="Discontinued">
+                                            <i class="fas fa-ban text-muted"></i> Discontinuados
+                                        </a>
+                                    </li>
+                                    <!-- Más comprados -->
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Products" asp-action="MostPurchased">
+                                            <i class="fas fa-trophy text-warning"></i> Más comprados
+                                        </a>
+                                    </li>
+                                    <!-- Órdenes -->
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Order" asp-action="AllOrders">
+                                            <i class="fas fa-list"></i> Todas las órdenes
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Cart" asp-action="Index">
+                                <i class="fas fa-shopping-cart"></i> Carrito
+                                <span id="cartBadge" class="badge bg-danger" style="display:none;">0</span>
+                            </a>
+                        </li>
                     </ul>
                     <partial name="_LoginPartial" />
                 </div>
@@ -47,5 +105,26 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    <script>
+        function updateCartBadge() {
+            $.ajax({
+                url: '@Url.Action("GetCartCount", "Cart")',
+                type: 'GET',
+                success: function (data) {
+                    var badge = $('#cartBadge');
+                    if (data.count > 0) {
+                        badge.text(data.count);
+                        badge.show();
+                    } else {
+                        badge.hide();
+                    }
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            updateCartBadge();
+        });
+    </script>
 </body>
 </html>
